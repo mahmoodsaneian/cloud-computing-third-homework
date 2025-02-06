@@ -1,0 +1,41 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:5.7
+    container_name: mysql
+    restart: always
+    environment:
+      MYSQL_DATABASE: 'spotify_data'
+      MYSQL_USER: 'spark_user'
+      MYSQL_PASSWORD: '12345678'
+      MYSQL_ROOT_PASSWORD: '12345678'
+    ports:
+      - "3306:3306"
+    expose:
+      - '3306'
+    networks:
+      - common-network
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+  spark_app:
+    container_name: spark_app
+    build: 
+      context: .
+    depends_on:
+      - mysql
+    networks:
+      - common-network
+    environment:
+      - MYSQL_URL=jdbc:mysql://mysql:3306/spotify_data
+      - MYSQL_USER=spark_user
+      - MYSQL_PASSWORD=12345678
+      - MYSQL_DRIVER=com.mysql.cj.jdbc.Driver
+      - MYSQL_TABLE=spotify_tracks
+volumes:
+  mysql_data:
+
+networks:
+  common-network:
+    driver: bridge
